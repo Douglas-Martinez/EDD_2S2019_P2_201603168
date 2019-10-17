@@ -12,11 +12,11 @@ import select
 import sys
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#if len(sys.argv) != 3:
- #   print("Error, debe de ser: python3 \'SCRIPT\' \'IP_ADRESS\' \'PORT_NUMBER\'")
-  #  exit()
-IP_address = str('127.0.0.1')
-Port = int('8080')
+if len(sys.argv) != 3:
+    print("Error, debe de ser: python3 \'SCRIPT\' \'IP_ADRESS\' \'PORT_NUMBER\'")
+    exit()
+IP_address = str(sys.argv[1])
+Port = int(sys.argv[2])
 server.connect((IP_address,Port))
 
 bc = BlockChain()
@@ -33,29 +33,21 @@ def sock():
             if socks == server:
                 message = socks.recv(2048)
                 aux = str(message.decode('utf-8'))
-                #print("\nAUX: \n"+aux)
                 if aux != 'true' and aux != 'false' and aux[0] == '{':
-                    #convertir el string message a un JSON
-                    #print("\n--- Vamo a verificar ---")
                     bloqueEspera = verificar(aux)
                     if bloqueEspera != None:
-                        #print('\n> DIO TRUE')
                         espera.push(bloqueEspera)
                         server.sendall('true'.encode('utf-8'))
                     else:
-                        #print('\n> DIO FALSE')
                         server.sendall('false'.encode('utf-8'))
                 else:
                     if aux == 'true':
                         inse = espera.pop()
                         bc.Insert(inse.b)
-                        print('=== Insertado ===')
+                        print('\n=== Insertado ===')
                     elif aux == 'false':
                         espera.pop()
-                        print('=== Rechazado ===')
-                        
-                        
-                #print ("Server: " + str(message.decode('utf-8')))
+                        print('\n=== Rechazado ===')
 
 def menu():
     bloque = None
@@ -247,7 +239,7 @@ def verificar(y):
 
     block2 = Bloque(lol["INDEX"],lol["TIMESTAMP"],lol["CLASS"],jsonstring,lol["PREVIOUSHASH"])
     if block2.HASH == has:
-        print('\n\nHASH IGUALES')
+        #print('\n\nHASH IGUALES')
         return block2
     else:
         print('\n\nHASH NO IGUALES')

@@ -7,7 +7,6 @@ class Pila(object):
     def __init__(self):
         self.tope = None
 
-    #Push
     def push(self,b=""):
         nuevo = NodoPila(b)
         if self.tope is None:
@@ -16,7 +15,6 @@ class Pila(object):
             nuevo.sig = self.tope
             self.tope = nuevo
     
-    #Pop
     def pop(self):
         if self.tope is None:
             return None
