@@ -14,11 +14,16 @@ class Bloque(object):
     def func_Hash(self):
         return hashlib.sha256(str(self.INDEX).encode() + str(self.TIMESTAMP).encode() + str(self.CLASS).encode() + str(self.DATA).encode() + str(self.PREVIOUSHASH).encode()).hexdigest()
 
+class NodoPila(object):
+    def __init__(self,block=None):
+        self.b = block
+        self.sig = None
+
 class NodoAVL(object):
     def __init__(self, c=0, n=''):
         self.carne = c
         self.name = n
-        self.height = 0
+        self.height = 1
         self.fe = 0
         
         self.right = None

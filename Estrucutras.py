@@ -3,10 +3,42 @@ from Nodos import *
 from PIL import Image
 import os
 
+class Pila(object):
+    def __init__(self):
+        self.tope = None
+
+    #Push
+    def push(self,b=""):
+        nuevo = NodoPila(b)
+        if self.tope is None:
+            self.tope = nuevo
+        else:
+            nuevo.sig = self.tope
+            self.tope = nuevo
+    
+    #Pop
+    def pop(self):
+        if self.tope is None:
+            return None
+        else:
+            aux = self.tope
+            self.tope = self.tope.sig
+            return aux
+
 class BlockChain(object):
     def __init__(self):
         self.primero = None
         self.ultimo = None
+
+    def Insert(self,bloque):
+        if self.primero is None and self.ultimo is None:
+            self.primero = bloque
+            self.ultimo = bloque
+        else:
+            bloque.anterior = self.ultimo
+            self.ultimo.siguiente = bloque
+            self.ultimo = bloque
+
 
     def insert(self,tst,classe,data):
         if self.primero is None and self.ultimo is None:
@@ -50,14 +82,6 @@ class BlockChain(object):
         os.system("dot -Tjpg BlockChain.dot -o BlockChain.jpg")
         im  = Image.open('BlockChain.jpg')
         im.show()
-    
-    def recorrer(self):
-        aux = self.primero
-        while aux is not None:
-            print()
-            print('Index: {}\nTimeStamp: {}\nClass: {}\nData: {}\nPreviousHash: {}\nHash: {}'.format(aux.INDEX,aux.TIMESTAMP,aux.CLASS,aux.DATA,aux.PREVIOUSHASH,aux.HASH))
-            aux = aux.siguiente
-
 
 class AVL(object):
     def __init__(self):
@@ -72,10 +96,9 @@ class AVL(object):
 
     def insert(self,c,n):
         self.root = self.insert2(self.root,c,n)
-        self.Niveles(self.root,1)
         
     def insert2(self,root,c,n):
-        #No. 1
+        #No. 1 ABB
         if not root:
             return NodoAVL(c,n)
         elif c < root.carne:
@@ -85,7 +108,7 @@ class AVL(object):
         elif c == root.carne:
             print('El Estudiante con Carne: {}, ya existe'.format(c))
             return root
-        
+        #AVL
         #No. 2
         root.height = 1 + max(self.getHeight(root.left),self.getHeight(root.right))
 
@@ -94,20 +117,20 @@ class AVL(object):
 
         #No. 4
         # Left - Left
-        if balance > 1 and c < root.left.carne:
+        if balance < -1 and c < root.left.carne:
             return self.rightRotate(root)
 
         # Right - Right
-        if balance < -1 and c > root.right.carne:
+        if balance > 1 and c > root.right.carne:
             return self.leftRotate(root)
 
         # Left - Right
-        if balance > 1 and c > root.left.carne:
+        if balance < -1 and c > root.left.carne:
             root.left = self.leftRotate(root.left)
             return self.rightRotate(root)
 
         # Right - Left
-        if balance < -1 and c < root.right.carne:
+        if balance > 1 and c < root.right.carne:
             root.right = self.rightRotate(root.right)
             return self.leftRotate(root)
 
@@ -121,7 +144,9 @@ class AVL(object):
         z.right = T2
 
         z.height = 1 + max(self.getHeight(z.left),self.getHeight(z.right))
+        self.getBalance(z)
         y.height = 1 + max(self.getHeight(y.left),self.getHeight(y.right))
+        self.getBalance(y)
 
         return y
 
@@ -133,7 +158,9 @@ class AVL(object):
         z.left = T3
 
         z.height = 1 + max(self.getHeight(z.left),self.getHeight(z.right))
+        self.getBalance(z)
         y.height = 1 + max(self.getHeight(y.left),self.getHeight(y.right))
+        self.getBalance(y)
 
         return y
 
@@ -145,13 +172,8 @@ class AVL(object):
     def getBalance(self, root):
         if not root:
             return 0
-        return self.getHeight(root.left) - self.getHeight(root.right)
-
-    def Niveles(self,nodo,n):
-        if nodo != None:
-            nodo.nivel = n+1
-            self.Niveles(nodo.left,nodo.nivel)
-            self.Niveles(nodo.right,nodo.nivel)
+        root.fe = self.getHeight(root.right) - self.getHeight(root.left)
+        return root.fe
 
     def auxGraficar(self,nodo):
         if nodo != None:
