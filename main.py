@@ -12,17 +12,18 @@ import select
 import sys
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-if len(sys.argv) != 3:
-    print("Error, debe de ser: python3 \'SCRIPT\' \'IP_ADRESS\' \'PORT_NUMBER\'")
-    exit()
-IP_address = str(sys.argv[1])
-Port = int(sys.argv[2])
+#if len(sys.argv) != 3:
+#    print("Error, debe de ser: python3 \'SCRIPT\' \'IP_ADRESS\' \'PORT_NUMBER\'")
+#    exit()
+#IP_address = str(sys.argv[1])
+#Port = int(sys.argv[2])
+IP_address = str('127.0.0.1')
+Port = int('8080')
 server.connect((IP_address,Port))
 
 bc = BlockChain()
 arbol = AVL()
 espera = Pila()
-
 
 def sock():
     while True:
@@ -81,46 +82,36 @@ def menu():
                         elif row[0] == 'data':
                             data = row[1]
                 csv_f.close()
+                dt = datetime.now()
+                timestamp = str(dt.day) + '-' + str(dt.month) + '-' + str(dt.year) + '::' + str(dt.hour) + ':' + str(dt.minute) + ':' + str(dt.second)
+                ind = ""
+                prev = ""
+                if bc.ultimo == None:
+                    ind = 0
+                    prev = '0000'
+                else:
+                    ind = int(bc.ultimo.INDEX) + 1
+                    prev = bc.ultimo.HASH
+                
+                var1 = json.loads(data)
+                var2 = json.dumps(var1)
+
+                bloqueEspera = Bloque(str(ind),timestamp,classe,str(var2),prev)
+                
+                sendstring = "{\n"
+                sendstring += "\"INDEX\":\"" + str(bloqueEspera.INDEX) + "\",\n"
+                sendstring += "\"TIMESTAMP\":\"" + str(bloqueEspera.TIMESTAMP) + "\",\n"
+                sendstring += "\"CLASS\":\"" + str(bloqueEspera.CLASS) + "\",\n"
+                sendstring += "\"DATA\":" + str(var2) + ",\n"
+                sendstring += "\"PREVIOUSHASH\":\"" + str(bloqueEspera.PREVIOUSHASH) + "\",\n"
+                sendstring += "\"HASH\":\"" + str(bloqueEspera.HASH) + "\"\n"
+                sendstring += "}"
+                
+                espera.push(bloqueEspera)
+                
+                server.sendall(sendstring.encode('utf-8'))
             except:
                 print('\nError con el archivo {}\n'.format(arch))
-            dt = datetime.now()
-            timestamp = str(dt.day) + '-' + str(dt.month) + '-' + str(dt.year) + '::' + str(dt.hour) + ':' + str(dt.minute) + ':' + str(dt.second)
-            ind = ""
-            prev = ""
-            if bc.ultimo == None:
-                ind = 0
-                prev = '0000'
-            else:
-                ind = int(bc.ultimo.INDEX) + 1
-                prev = bc.ultimo.HASH
-            
-            bloqueEspera = Bloque(ind,timestamp,classe,data,prev)
-            
-            sendstring = "{\n"
-            sendstring += "\"INDEX\":\"" + str(bloqueEspera.INDEX) + "\",\n"
-            sendstring += "\"TIMESTAMP\":\"" + str(bloqueEspera.TIMESTAMP) + "\",\n"
-            sendstring += "\"CLASS\":\"" + str(bloqueEspera.CLASS) + "\",\n"
-            sendstring += "\"DATA\":" + str(bloqueEspera.DATA) + ",\n"
-            sendstring += "\"PREVIOUSHASH\":\"" + str(bloqueEspera.PREVIOUSHASH) + "\",\n"
-            sendstring += "\"HASH\":\"" + str(bloqueEspera.HASH) + "\"\n"
-            sendstring += "}"
-
-            bloqueALV = verificar2(sendstring)
-            
-            bloqueEspera.HASH = bloqueALV
-
-            espera.push(bloqueEspera)
-            
-            sendstring = "{\n"
-            sendstring += "\"INDEX\":\"" + str(bloqueEspera.INDEX) + "\",\n"
-            sendstring += "\"TIMESTAMP\":\"" + str(bloqueEspera.TIMESTAMP) + "\",\n"
-            sendstring += "\"CLASS\":\"" + str(bloqueEspera.CLASS) + "\",\n"
-            sendstring += "\"DATA\":" + str(bloqueEspera.DATA) + ",\n"
-            sendstring += "\"PREVIOUSHASH\":\"" + str(bloqueEspera.PREVIOUSHASH) + "\",\n"
-            sendstring += "\"HASH\":\"" + str(bloqueEspera.HASH) + "\"\n"
-            sendstring += "}"
-
-            server.sendall(sendstring.encode('utf-8'))
         elif op == '2':
             bloque = None
             print('\n---------- Select Block ----------\n')
@@ -209,6 +200,7 @@ def menu():
                 print('No blocks in the BlockChain to report\n')
         elif op == '4':
             sys.exit()
+            break
         else:
             print('\nInvalid Option\n')
 
@@ -233,11 +225,14 @@ def verificar2(y):
 def verificar(y):
     lol = json.loads(y)
     has = lol["HASH"]
-    
-    jsondata = lol['DATA']
-    jsonstring = json.dumps(jsondata)
+    varA = json.dumps(lol['DATA'])
 
-    block2 = Bloque(lol["INDEX"],lol["TIMESTAMP"],lol["CLASS"],jsonstring,lol["PREVIOUSHASH"])
+    block2 = ''
+    if bc.ultimo is None:
+        block2 = Bloque(lol["INDEX"],lol["TIMESTAMP"],lol["CLASS"],str(varA),'0000')
+    else:
+        block2 = Bloque(lol["INDEX"],lol["TIMESTAMP"],lol["CLASS"],str(varA),bc.ultimo.HASH)
+
     if block2.HASH == has:
         #print('\n\nHASH IGUALES')
         return block2
@@ -250,6 +245,5 @@ def verificar(y):
 if __name__ == '__main__':
     hilo1 = threading.Thread(name='Menu', target=menu)
     hilo2 = threading.Thread(name='Oir', target=sock)
-    
     hilo1.start()
     hilo2.start()
