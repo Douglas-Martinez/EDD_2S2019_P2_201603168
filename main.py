@@ -12,13 +12,16 @@ import select
 import sys
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#if len(sys.argv) != 3:
-#    print("Error, debe de ser: python3 \'SCRIPT\' \'IP_ADRESS\' \'PORT_NUMBER\'")
-#    exit()
-#IP_address = str(sys.argv[1])
-#Port = int(sys.argv[2])
-IP_address = str('127.0.0.1')
+
+if len(sys.argv) != 3:
+    print("Error, debe de ser: python3 \'SCRIPT\' \'IP_ADRESS\' \'PORT_NUMBER\'")
+    exit()
+IP_address = str(sys.argv[1])
+Port = int(sys.argv[2])
+'''
+IP_address = str('10.56.71.184')
 Port = int('8080')
+'''
 server.connect((IP_address,Port))
 
 bc = BlockChain()
@@ -93,16 +96,18 @@ def menu():
                     ind = int(bc.ultimo.INDEX) + 1
                     prev = bc.ultimo.HASH
                 
+
+
                 var1 = json.loads(data)
                 var2 = json.dumps(var1)
-
-                bloqueEspera = Bloque(str(ind),timestamp,classe,str(var2),prev)
+                #b2 = Bloque(str(ind),timestamp,classe,data,prev)
+                bloqueEspera = Bloque(str(ind),timestamp,classe,var2,prev)
                 
                 sendstring = "{\n"
                 sendstring += "\"INDEX\":\"" + str(bloqueEspera.INDEX) + "\",\n"
                 sendstring += "\"TIMESTAMP\":\"" + str(bloqueEspera.TIMESTAMP) + "\",\n"
                 sendstring += "\"CLASS\":\"" + str(bloqueEspera.CLASS) + "\",\n"
-                sendstring += "\"DATA\":" + str(var2) + ",\n"
+                sendstring += "\"DATA\":" + str(bloqueEspera.DATA) + ",\n"
                 sendstring += "\"PREVIOUSHASH\":\"" + str(bloqueEspera.PREVIOUSHASH) + "\",\n"
                 sendstring += "\"HASH\":\"" + str(bloqueEspera.HASH) + "\"\n"
                 sendstring += "}"
@@ -138,7 +143,7 @@ def menu():
                 if find == False:
                     print('Error with the Index, try again...')
                 else:
-                    print('BLOCK IS SELECTED:')
+                    print('BLOCK SELECTED:\n')
                     print("\rINDEX: ",bloque.INDEX)
                     print('\rTIMESTAMP: ',bloque.TIMESTAMP)
                     print('\rCLASS: ',bloque.CLASS)
@@ -187,6 +192,7 @@ def menu():
                                     arbol.graficarPRE()
                                     arbol.graficarIN()
                                     arbol.graficarPOST()
+                                    print('')
                                 elif oprt == '3':
                                     break
                                 else:
@@ -212,26 +218,17 @@ def convertAVL(json):
         convertAVL(json["left"])
         convertAVL(json["right"])
 
-def verificar2(y):
-    lol = json.loads(y)
-    has = lol["HASH"]
-    
-    jsondata = lol['DATA']
-    jsonstring = json.dumps(jsondata)
-
-    block2 = Bloque(lol["INDEX"],lol["TIMESTAMP"],lol["CLASS"],jsonstring,lol["PREVIOUSHASH"])
-    return block2.HASH
-
 def verificar(y):
     lol = json.loads(y)
-    has = lol["HASH"]
+    has = lol['HASH']
     varA = json.dumps(lol['DATA'])
 
     block2 = ''
     if bc.ultimo is None:
-        block2 = Bloque(lol["INDEX"],lol["TIMESTAMP"],lol["CLASS"],str(varA),'0000')
+        #block2 = Bloque(lol["INDEX"],lol["TIMESTAMP"],lol["CLASS"],lol['DATA'],'0000')
+        block2 = Bloque(str(0),lol["TIMESTAMP"],lol["CLASS"],str(varA),'0000')
     else:
-        block2 = Bloque(lol["INDEX"],lol["TIMESTAMP"],lol["CLASS"],str(varA),bc.ultimo.HASH)
+        block2 = Bloque(int(bc.ultimo.INDEX)+1,lol["TIMESTAMP"],lol["CLASS"],str(varA),bc.ultimo.HASH)
 
     if block2.HASH == has:
         #print('\n\nHASH IGUALES')

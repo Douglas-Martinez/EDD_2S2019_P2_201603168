@@ -12,7 +12,9 @@ class Bloque(object):
         self.siguiente = None
 
     def func_Hash(self):
-        return hashlib.sha256(str(self.INDEX).encode() + str(self.TIMESTAMP).encode() + str(self.CLASS).encode() + str(self.DATA).encode() + str(self.PREVIOUSHASH).encode()).hexdigest()
+        temp = str(self.INDEX) + str(self.TIMESTAMP) + str(self.CLASS) + str(self.DATA) + str(self.PREVIOUSHASH)
+        return hashlib.sha256(temp.encode()).hexdigest()
+        #return hashlib.sha256(str(self.INDEX).encode() + str(self.TIMESTAMP).encode() + str(self.CLASS).encode() + str(self.DATA).encode() + str(self.PREVIOUSHASH).encode()).hexdigest()
 
 class NodoPila(object):
     def __init__(self,block=None):
